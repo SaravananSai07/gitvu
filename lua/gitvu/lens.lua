@@ -1,16 +1,25 @@
 local M = {}
 
-local ns = vim.api.nvim_create_namespace("gitvu_author")
+local ns = vim.api.nvim_create_namespace("gitvu_lens")
 local enabled = false
+local config = {
+  format = "👤 %s"  -- default format
+}
+
+function M.setup(opts)
+  config = vim.tbl_extend("force", config, opts or {})
+  vim.cmd [[command! GitVuToggleLens lua require('gitvu.lens').toggle()]]
+end
 
 function M.toggle()
   enabled = not enabled
   if enabled then
-    vim.notify("GitVu: Line author enabled", vim.log.levels.INFO)
-    vim.cmd [[autocmd CursorMoved * lua require('gitvu.author').show_author()]]
+    vim.notify("GitVu: Lens enabled", vim.log.levels.INFO)
+    vim.cmd [[autocmd CursorMoved * lua require('gitvu.lens').show_author()]]
+    M.show_author()
   else
-    vim.notify("GitVu: Line author disabled", vim.log.levels.INFO)
-    vim.cmd [[autocmd! CursorMoved * lua require('gitvu.author').show_author()]]
+    vim.notify("GitVu: Lens disabled", vim.log.levels.INFO)
+    vim.cmd [[autocmd! CursorMoved * lua require('gitvu.lens').show_author()]]
     vim.api.nvim_buf_clear_namespace(0, ns, 0, -1)
   end
 end
@@ -31,7 +40,7 @@ function M.show_author()
   local author = output[1]:match("author (.+)")
   if author then
     vim.api.nvim_buf_set_extmark(0, ns, line, 0, {
-      virt_text = {{ "👤 " .. author, "Comment" }},
+      virt_text = {{ string.format(config.format, author), "Comment" }},
       virt_text_pos = "eol",
     })
   end

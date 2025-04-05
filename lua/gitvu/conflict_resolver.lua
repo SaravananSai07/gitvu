@@ -1,12 +1,13 @@
 local M = {}
 
 function M.setup()
+  -- Create commands
   vim.cmd [[
-    command! GitVuNextConflict lua require('gitvu.merge').goto_conflict('next')
-    command! GitVuPrevConflict lua require('gitvu.merge').goto_conflict('prev')
-    command! GitVuTakeCurrent lua require('gitvu.merge').take_at_cursor('current')
-    command! GitVuTakeIncoming lua require('gitvu.merge').take_at_cursor('incoming')
-    command! GitVuTakeBoth lua require('gitvu.merge').take_at_cursor('both')
+    command! GitVuNextConflict lua require('gitvu.conflict_resolver').goto_conflict('next')
+    command! GitVuPrevConflict lua require('gitvu.conflict_resolver').goto_conflict('prev')
+    command! GitVuTakeCurrent lua require('gitvu.conflict_resolver').take_at_cursor('current')
+    command! GitVuTakeIncoming lua require('gitvu.conflict_resolver').take_at_cursor('incoming')
+    command! GitVuTakeBoth lua require('gitvu.conflict_resolver').take_at_cursor('both')
   ]]
 end
 
