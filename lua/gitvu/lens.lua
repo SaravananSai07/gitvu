@@ -29,6 +29,10 @@ function M.show_author()
 
   local line = vim.fn.line('.') - 1
   local file = vim.fn.expand('%:p')
+  
+  -- Check if file exists and is in a git repo
+  if vim.fn.filereadable(file) == 0 then return end
+  if vim.fn.system('git rev-parse --is-inside-work-tree 2>/dev/null') ~= "true\n" then return end
 
   vim.api.nvim_buf_clear_namespace(0, ns, 0, -1)
 
@@ -37,7 +41,12 @@ function M.show_author()
 
   if vim.v.shell_error ~= 0 then return end
 
-  local author = output[1]:match("author (.+)")
+  local author
+  for _, line in ipairs(output) do
+    author = line:match("^author (.+)")
+    if author then break end
+  end
+
   if author then
     vim.api.nvim_buf_set_extmark(0, ns, line, 0, {
       virt_text = {{ string.format(config.format, author), "Comment" }},
