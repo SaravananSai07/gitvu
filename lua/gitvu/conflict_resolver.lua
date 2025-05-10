@@ -27,23 +27,40 @@ end
 -- Return all conflicts in the file as a list of {start, mid, end_}
 function M.find_all_conflicts()
   local conflicts = {}
-  local pos = 1
+  local save_cursor = vim.fn.getcurpos()
+  local last_pos = 0
 
-  while pos <= vim.fn.line('$') do
-    local start = vim.fn.search('^<<<<<<<', 'nW')
-    if start == 0 then break end
-
-    local mid = vim.fn.search('^=======', 'nW')
-    local end_ = vim.fn.search('^>>>>>>>', 'nW')
-
-    if mid > start and end_ > mid then
-      table.insert(conflicts, { start = start, mid = mid, end_ = end_ })
-      pos = end_ + 1
-    else
-      pos = start + 1
+  -- Get all lines in the buffer
+  local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+  
+  for i, line in ipairs(lines) do
+    if line:match('^<<<<<<<') then
+      local start = i
+      -- Look for the separator and end markers
+      for j = i + 1, #lines do
+        if lines[j]:match('^=======') then
+          local mid = j
+          -- Look for the end marker
+          for k = j + 1, #lines do
+            if lines[k]:match('^>>>>>>>') then
+              table.insert(conflicts, { 
+                start = start, 
+                mid = mid, 
+                end_ = k 
+              })
+              last_pos = k
+              break
+            end
+          end
+          break
+        end
+      end
     end
   end
 
+  -- Restore cursor position
+  vim.fn.setpos('.', save_cursor)
+  
   return conflicts
 end
 
